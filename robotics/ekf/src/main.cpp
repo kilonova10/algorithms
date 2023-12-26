@@ -3,10 +3,10 @@
 #include <sstream>
 #include <vector>
 #include <stdlib.h>
-#include "Eigen/Dense"
 //#include "FusionEKF.h"
-//#include "ground_truth_package.h"
-//#include "measurement_package.h"
+#include "ground_truth_package.h"
+#include "measurement_package.h"
+#include "Eigen/Dense"
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -65,5 +65,72 @@ int main(int argc, char* argv[]) {
 
   check_files(in_file_, in_file_name_, out_file_, out_file_name_);
 
+
+  // vectors to store the measurements and the ground truths
+  vector<MeasurementPackage> measurement_pack_list;
+  vector<GroundTruthPackage> gt_pack_list;
+
+  string line;
+
+  // prepare a measurement package for each line representing a measurement at that timestamp
+  while(getline(in_file_, line))
+  {
+    string sensor_type;
+    MeasurementPackage meas_package;
+    GroundTruthPackage gt_package;
+    istringstream iss(line);
+    long long timestamp;
+
+    // check the sensor of each measurement
+    iss >> sensor_type;
+
+    // LiDAR measurement
+    if (sensor_type.compare("L") == 0)
+    {
+      meas_package.sensor_type_ = MeasurementPackage::LIDAR;
+      meas_package.raw_measurements_ = VectorXd(2);
+      float x;
+      float y;
+      iss >> x;
+      iss >> y;
+      meas_package.raw_measurements_ << x,y;
+      iss >> timestamp;
+      meas_package.timestamp_ = timestamp;
+      measurement_pack_list.push_back(meas_package);
+
+    }
+    else if(sensor_type.compare("R") == 0)
+    {
+      // RADAR measurement
+      meas_package.sensor_type_ = MeasurementPackage::RADAR;
+      meas_package.raw_measurements_ = VectorXd(3);
+      float rho; 
+      float phi;
+      float rho_dot;
+      iss >> rho;
+      iss >> phi;
+      iss >> rho_dot;
+      meas_package.raw_measurements_ << rho, phi, rho_dot;
+      iss >> timestamp;
+      meas_package.timestamp_ = timestamp;
+      measurement_pack_list.push_back(meas_package);
+
+    }
+
+    // read ground truth data to compare later
+    float x_gt;
+    float y_gt;
+    float vx_gt;
+    float vy_gt;
+    iss >> x_gt;
+    iss >> y_gt;
+    iss >> vx_gt;
+    iss >> vy_gt;
+    gt_package.gt_values_ = VectorXd(4);
+    gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
+    gt_pack_list.push_back(gt_package);
+  }
+
+  cout << "read data and ground truth from file" << endl; 
   return 0;
 }
