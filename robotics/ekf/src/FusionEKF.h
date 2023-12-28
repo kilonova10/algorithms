@@ -10,13 +10,42 @@
 #include "tools.h"
 
 class FusionEKF {
+public:
+  /**
+  * Constructor.
+  */
+  FusionEKF();
 
-public: 
-	FusionEKF();
+  /**
+  * Destructor.
+  */
+  virtual ~FusionEKF();
 
-	virtual ~FusionEKF();
+  /**
+  * Run the whole flow of the Kalman Filter from here.
+  */
+  void ProcessMeasurement(const MeasurementPackage &measurement_pack);
 
-	void ProcessMeasurement(const MeasurementPackage &measurement_pack);
+  /**
+  * Kalman Filter update and prediction math lives in here.
+  */
+  KalmanFilter ekf_;
 
-	KalmanFilter ekf_;
-}
+private:
+  bool is_initialized_;
+
+  // previous timestamp
+  long long previous_timestamp_;
+
+  // tool object used to compute Jacobian and RMSE
+  Tools tools;
+  Eigen::MatrixXd R_laser_;    // laser measurement noise
+  Eigen::MatrixXd R_radar_;    // radar measurement noise
+  Eigen::MatrixXd H_laser_;    // measurement function for laser
+  Eigen::MatrixXd H_radar_;         // measurement function for radar
+
+  float noise_ax;
+  float noise_ay;
+};
+
+#endif /* FusionEKF_H_ */

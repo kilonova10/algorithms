@@ -5,59 +5,39 @@
 class KalmanFilter {
 public:
 
-	// state vector
-	Eigen::VectorXd x_;
+  // state vector
+  Eigen::VectorXd x_;
 
-	// state cov matrix
-	Eigen::VectorXd P_;
+  // state covariance matrix
+  Eigen::MatrixXd P_;
 
-	// state transition matrix
-	Eigen::VectorXd F_;
+  // state transistion matrix
+  Eigen::MatrixXd F_;
 
-	// process cov matrix
-	Eigen::VectorXd Q_;
+  // process covariance matrix
+  Eigen::MatrixXd Q_;
 
-	// measurement matrix
-	Eigen::MatrixXd H_;
+  // measurement matrix
+  Eigen::MatrixXd H_;
 
-	// measurement cov matrix;
-	Eigen::MatrixXd R_;
-
-	KalmanFilter();
-
-  	virtual ~KalmanFilter();
+  // measurement covariance matrix
+  Eigen::MatrixXd R_;
 
 
-  /**
-   * Init Initializes Kalman filter
-   * @param x_in Initial state
-   * @param P_in Initial state covariance
-   * @param F_in Transition matrix
-   * @param H_in Measurement matrix
-   * @param R_in Measurement covariance matrix
-   * @param Q_in Process covariance matrix
-   */
-  	void Init(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
-    Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_in, Eigen::MatrixXd &Q_in);
+  KalmanFilter();
 
-  /**
-   * Prediction Predicts the state and the state covariance
-   * using the process model
-   */
-   void Predict();
+  virtual ~KalmanFilter();
 
-  /**
-   * Updates the state by using standard Kalman Filter equations
-   * @param z The measurement at k+1
-   */
-   void Update(const Eigen::VectorXd &z);
+  void Init(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
+      Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_in, Eigen::MatrixXd &Q_in);
 
-  /**
-   * Updates the state by using Extended Kalman Filter equations
-   * @param z The measurement at k+1
-   */
-   void UpdateEKF(const Eigen::VectorXd &z);
+  
+  void Predict();
+
+  void Update(const Eigen::VectorXd &z);
+
+  void UpdateEKF(const Eigen::VectorXd &z);
 
 };
 
-#endif /* KALMAN_FILTER_H_ */
+#endif 

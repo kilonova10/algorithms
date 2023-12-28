@@ -3,10 +3,10 @@
 #include <sstream>
 #include <vector>
 #include <stdlib.h>
-//#include "FusionEKF.h"
+#include "Eigen/Dense"
+#include "FusionEKF.h"
 #include "ground_truth_package.h"
 #include "measurement_package.h"
-#include "Eigen/Dense"
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
 
     }
 
-    // read ground truth data to compare later
+    // read ground truth data
     float x_gt;
     float y_gt;
     float vx_gt;
@@ -131,6 +131,65 @@ int main(int argc, char* argv[]) {
     gt_pack_list.push_back(gt_package);
   }
 
-  cout << "read data and ground truth from file" << endl; 
+  cout << "read data and ground truth from file" << endl;
+
+  FusionEKF fusionEKF; 
+
+  vector<VectorXd> estimations;
+  vector<VectorXd> ground_truth;
+
+  Tools tools;
+  size_t N = measurement_pack_list.size();
+  for (size_t k =0; k<N; k++)
+  {
+    MeasurementPackage meas = measurement_pack_list[k];
+
+    fusionEKF.ProcessMeasurement(meas);
+
+    // write output estimation
+    out_file_ << fusionEKF.ekf_.x_(0)<< "\t";
+    out_file_ << fusionEKF.ekf_.x_(1)<< "\t"; 
+    out_file_ << fusionEKF.ekf_.x_(2)<< "\t"; 
+    out_file_ << fusionEKF.ekf_.x_(3)<< "\t"; 
+
+    if(meas.sensor_type_ == MeasurementPackage::LIDAR )
+    {
+      out_file_ << meas.raw_measurements_(0) << "\t"; // direct measurement in x
+      out_file_ << meas.raw_measurements_(1) << "\t"; // direct measurement in y
+
+    }
+    else if(meas.sensor_type_ == MeasurementPackage::RADAR)
+    {
+      float rho = meas.raw_measurements_(0);
+      float phi = meas.raw_measurements_(1);
+
+      out_file_ << rho*cos(phi) << "\t"; // x component in cartesian
+      out_file_ << rho*sin(phi) << "\t"; // y component in cartesian
+
+    }
+
+    out_file_ << gt_pack_list[k].gt_values_(0)<< "\t";
+    out_file_ << gt_pack_list[k].gt_values_(1)<< "\t";
+    out_file_ << gt_pack_list[k].gt_values_(2)<< "\t";
+    out_file_ << gt_pack_list[k].gt_values_(3)<< "\n";
+
+    estimations.push_back(fusionEKF.ekf_.x_);
+    ground_truth.push_back(gt_pack_list[k].gt_values_);
+
+  }
+  cout << "made ekf instance" << endl;
+
+  cout << "RMSE: " << endl << tools.CalculateRMSE(estimations, ground_truth) << endl;
+
+  // close files
+  if (out_file_.is_open()) {
+    out_file_.close();
+  }
+
+  if (in_file_.is_open()) {
+    in_file_.close();
+  }
   return 0;
+
 }
+
