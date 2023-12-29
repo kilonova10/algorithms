@@ -156,6 +156,8 @@ int main(int argc, char* argv[]) {
     {
       out_file_ << meas.raw_measurements_(0) << "\t"; // direct measurement in x
       out_file_ << meas.raw_measurements_(1) << "\t"; // direct measurement in y
+      out_file_ << 0 << "\t";
+
 
     }
     else if(meas.sensor_type_ == MeasurementPackage::RADAR)
@@ -165,6 +167,7 @@ int main(int argc, char* argv[]) {
 
       out_file_ << rho*cos(phi) << "\t"; // x component in cartesian
       out_file_ << rho*sin(phi) << "\t"; // y component in cartesian
+      out_file_ << 1 << "\t";
 
     }
 
